@@ -1,3 +1,3 @@
-# ShotgunDM
+# Shotgun-DM
 
-ShotgunDM is a Squirrel written Vice City Multiplayer gamemode that adds shotgun/stubby deatmatch WITHOUT M4.
+Shotgun-DM is a Vice City Multiplayer gamemode that adds shotgun/stubby deatmatch WITHOUT M4.
