@@ -3,7 +3,7 @@
 Shotgun-DM is a Vice City Multiplayer gamemode that adds shotgun/stubby deathmatch WITHOUT M4.
 Gameplay is similiar to littlewhitey's gamemode\
 but only with shotguns and downtown gameplay\
-made by a guy who loves fighting with stubby in downtown \
+made by a guy who loves fighting with stubby in downtown 
 
 # Features
 
@@ -13,7 +13,7 @@ Lots of Deatmatch Commands & Systems
 # List of the features will be added soon
 
 Account & Admin system\
-Randomizer ( Can be toggled by admin )\
+Randomizer ( Can be toggled by admin )
 
 # Installation
 Extract ShotgunDM.rar and paste content into the
