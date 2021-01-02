@@ -1,4 +1,4 @@
-// This File contains vcmp constants. More will be added
+// This File contains vcmp constants.
 enum Weapons {
     FIST,
     BRASS_KNUCKLES,
@@ -35,3 +35,10 @@ enum Weapons {
     M60,
     MINIGUN
 };
+
+const MAX_PLAYERS = 100
+const MAX_VEHICLES = 1000
+const MAX_OBJECTS = 3000
+const MAX_PICKUPS = 2000
+const MAX_SPRITES = 128
+const MAX_TEXTDRAWS = 256
