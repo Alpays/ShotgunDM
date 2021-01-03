@@ -39,6 +39,8 @@ function onScriptLoad() {
     CreatePickup(505,Vector(-410,1120,11.14))
     CreatePickup(505,Vector(-558,782,22.97))
     CreatePickup(505,Vector(-552, 788.3, 97.51))
+    CreatePickup(505,Vector(-811, 1353.3, 66.41))
+    CreatePickup(505,Vector(-831, 1312.3, 11.51))
 
     // No need for sql based vehicle system since playground is pretty small
     CreateVehicle(139, 0, Vector(-838, 1040, 15.7), 3.12, 1, 1)
@@ -59,7 +61,8 @@ function onScriptLoad() {
     CreateVehicle(198, 0, Vector(-725, 1392, 11.71), -0.73, 35,35)
     CreateVehicle(141, 0, Vector(-308, 1346, 11.41), -0.73, 0,0)
     CreateVehicle(174, 0, Vector(-592, 796, 11.11), -3.11, 10,10)
-	CreateVehicle(218, 0, Vector(-469, 1123, 64.71), -1.57, 1,1)
+    CreateVehicle(218, 0, Vector(-469, 1123, 64.71), -1.57, 1,1)
+    CreateVehicle(218, 0, Vector(-851,1354,69.5), 1.56, 1,1)
 }
 
 function SpawnProtection(playerid) {
@@ -118,7 +121,7 @@ function onPlayerSpawn( player ) {
 
 function onPlayerJoin( player ) {
     playerData[player.ID] = PlayerData();
-    Message("[#0000AA]" + player.Name + " joined the server!");
+    Message("[#0FE8F7]" + player.Name + " joined the server!");
     local q = QuerySQL( accountDb, "SELECT * FROM players WHERE name='"+player.Name+"'")
     if(q) {
         playerData[player.ID].registered = true;
@@ -151,7 +154,7 @@ function onPlayerPart( player, reason) {
 
 function onPlayerChat(player, msg) {
     if(playerData[player.ID].registered && !playerData[player.ID].logged) {
-        MessagePlayer("[#00FF00]You need to login to use chat", player)
+        MessagePlayer("[#00FF00]You need to login to use the chat", player)
         return 0;
     }
     return 1;
@@ -159,7 +162,7 @@ function onPlayerChat(player, msg) {
 
 function onPlayerRequestSpawn( player ) {
     if(playerData[player.ID].registered && !playerData[player.ID].logged) {
-        MessagePlayer("[#00FF00]You need to login to spawn", player)
+        MessagePlayer("[#00FF00]This account is registered you need to login to spawn", player)
         return 0;
     }
     return 1;
@@ -168,13 +171,60 @@ function onPlayerRequestSpawn( player ) {
 function onPickupPickedUp(player, pickup) {
 	switch(pickup.ID) 
 	{
-	    case 0:
-			player.Pos = Vector(-438,1115,56.69 )
+	case 0:
+	    player.Pos = Vector(-438,1115,56.69 )
             break;
         case 1:
             player.Pos = Vector(-559,782,97.51 )
             break;
         case 2:
             player.Pos = Vector(-567,792,22.87)
+            break;
+        case 3:
+            player.Pos = Vector(-817,1308,11.65)
+            break;
+        case 4:
+            player.Pos = Vector(-818,1355,66)
 	}
+}
+
+function onPlayerDeath(player, reason) {
+    playerData[player.ID].Deaths++;
+    Message("[#FA0BEA]" + player.Name + " [#FFFFFF]died.")
+}
+
+function onPlayerKill(killer, player, reason, bodypart) {
+    playerData[player.ID].Deaths++;
+    playerData[killer.ID].Kills++;
+    killer.Cash+=500;
+    player.Cash-=250;
+    Message("[#FA0BEA]" + killer.Name + " [#FFFFFF]killed[#FA0BEA] " + player.Name + " with " + GetWeaponName(reason)+ " ("+bodypart+")")
+    playerData[killer.ID].spree++;
+    if(playerData[player.ID].spree > 4) {
+        Message("[#FFFFFF]" + player.Name + "'s spree of " + playerData[player.ID].spree + " ended by " + killer.Name)
+    }
+    playerData[player.ID].spree = 0;
+    if(playerData[killer.ID].spree % 5 == 0) {
+        local reward = playerData[killer.ID].spree * 100;
+        Message("[#FFFFFF]" + killer.Name+ " [#FA0BEA]is on killing spree of " + playerData[killer.ID].spree + " reward: " + reward)
+        killer.Cash+=reward;       
+    }
+}
+
+function HealPlayer(playerid) {
+    local player = FindPlayer(playerid)
+    if(player) {
+        player.Cash-=300;
+        player.Health = 100;
+        MessagePlayer("[#00FF00]Successfully healed!", player)
+        playerData[player.ID].healing = false;
+    }
+}
+
+function onPlayerMove(player, lastx, lasty, lastz, newx, newy, newz) {
+    if(playerData[player.ID].healing) {
+        playerData[player.ID].healTimer.Delete();
+        MessagePlayer("[#FF0000]Healing failed, you cant move while healing!", player)
+        playerData[player.ID].healing = false
+    }
 }
