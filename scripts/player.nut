@@ -7,5 +7,7 @@ class PlayerData {
     registered = false;
     logged = false;
     weaponset = 1;
-    timesmuted = 0;
+    healing = false;
+    healTimer = 0;
+    spree = 0;
 }
