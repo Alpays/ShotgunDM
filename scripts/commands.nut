@@ -1,8 +1,26 @@
 function onPlayerCommand(player, cmd, arg) {
     cmd = cmd.tolower();
     switch(cmd) {
+        case "spree":
+        {
+            MessagePlayer("[#0056AA]Your Spree: " + playerData[player.ID].spree, player)
+        }
+        case "heal":
+        {
+            if(player.Pos.x > -850 && player.Pos.x < -765  && player.Pos.y > 1110 && player.Pos.y < 1162 || player.Pos.x > -845 && player.Pos.x < -820 && player.Pos.y < 747 && player.Pos.y > 739) {
+                if(player.Cash >= 300) {
+                    playerData[player.ID].healing = true;
+                    playerData[player.ID].healTimer = NewTimer( "HealPlayer", 3000, 1, player.ID )
+                    MessagePlayer("[#00FF00]You will heal in 3 seconds please dont move.", player)
+                }
+                else MessagePlayer("[#FF0000]You need $300 to heal!", player)
+            }
+            else MessagePlayer("[#FF0000]You need to be in hospital or drug store to heal!", player)
+            break;
+        }
         case "adminlevel":
         {   
+            player.Cash+=300;
             if(playerData[player.ID].adminlevel == 5 ) {
                 if(!arg) MessagePlayer("[#FF0000]Usage: /adminlevel [player] [level]", player)
                 else {
@@ -29,11 +47,11 @@ function onPlayerCommand(player, cmd, arg) {
         }
         case "stats":
         {
-            if(!arg) MessagePlayer("[#23FF00]Your stats: Kills " + playerData[player.ID].Kills + " Deaths: " + playerData[player.ID].Deaths, player)
+            if(!arg) MessagePlayer("[#23FF00]Your stats: Kills " + playerData[player.ID].Kills + " Deaths: " + playerData[player.ID].Deaths+ " Stubby Kills: " + playerData[player.ID].stubbyKills + " Shotgun Kills: " + playerData[player.ID].shotgunKills, player)
             else { 
                 local targetplayer = FindPlayer(arg)
                 if(targetplayer) {
-                    MessagePlayer("[#23FF00]" + player.Name + "'s stats: kills: " + playerData[targetplayer.ID].Kills + " Deaths: " + playerData[targetplayer.ID] + " Stubby Kills: " + playerData[targetplayer.ID].stubbyKills + " Shotgun Kills: " + playerData[targetplayer.ID].shotgunKills, player)
+                    MessagePlayer("[#23FF00]" + targetplayer.Name + "'s stats: kills: " + playerData[targetplayer.ID].Kills + " Deaths: " + playerData[targetplayer.ID] + " Stubby Kills: " + playerData[targetplayer.ID].stubbyKills + " Shotgun Kills: " + playerData[targetplayer.ID].shotgunKills, player)
                 }
                 else MessagePlayer("[#FF0000]Player not found!", player);
             }
@@ -93,7 +111,7 @@ function onPlayerCommand(player, cmd, arg) {
         case "commands":
         case "cmds":
         {
-            MessagePlayer("[#00FF00]Commands: /commands /rules /me /mypos /weaponset /stats [player] /register /login", player)
+            MessagePlayer("[#00FF00]Commands: /commands /rules /me /mypos /weaponset /stats [player] /register /login /heal /spree", player)
             break;
         }   
         case "weaponset": 
