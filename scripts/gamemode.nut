@@ -7,6 +7,15 @@ local version = "1.0"
 
 playerData <- array( GetMaxPlayers(), null);
 
+arena <- false;
+arenaWeaponId <- 21; 
+arenaSpawnpoints <- [
+    [Vector(519,-203,154)],
+    [Vector(561,-212,154)],
+    [Vector(560,-231,154)],
+    [Vector(541,-236,154)],
+    [Vector(522,-239,154)]
+];
 
 
 function onScriptLoad() {
@@ -21,7 +30,12 @@ function onScriptLoad() {
     SetFrameLimiter( false );
     // Databases
     accountDb <- ConnectSQL( "accounts.db" );
-    QuerySQL(accountDb, "CREATE TABLE IF NOT EXISTS players(name TEXT, password TEXT, adminlevel INTEGER, kills INTEGER, deaths INTEGER, cash INTEGER, stubbykills, shotgunkills,PRIMARY KEY(name, password));");
+    QuerySQL(accountDb, "CREATE TABLE IF NOT EXISTS players(name TEXT, password TEXT, adminlevel INTEGER, kills INTEGER, deaths INTEGER, cash INTEGER, stubbykills INTEGER, shotgunkills INTEGER,PRIMARY KEY(name, password));");
+
+    ban <- ConnectSQL( "bans.db" );
+    QuerySQL(ban, "CREATE TABLE IF NOT EXISTS reason(player TEXT, admin TEXT, reason TEXT)");
+    QuerySQL(ban, "CREATE TABLE IF NOT EXISTS bans(bannedname TEXT, ip VARCHAR(255), uid VARCHAR(255), uid2 VARCHAR(255))");
+
     // Classes
     AddClass(0, RGB(60,60,60), 93, Vector(-597, 653, 11), 1.0, 0,0,0,0,0,0)
     AddClass(0, RGB(60,60,60), 94, Vector(-597, 653, 11), 1.0, 0,0,0,0,0,0)
@@ -117,19 +131,52 @@ function onPlayerSpawn( player ) {
             player.SetWeapon( Weapons.BASEBALLBAT, 99999);
         }
     }
+    if(playerData[player.ID].inArena) {
+        local random = Random(0,arenaSpawnpoints.len()) - 1
+        player.Pos = arenaSpawnpoints[random][0]
+        player.Disarm();
+        player.SetWeapon(arenaWeaponId, 10000)
+        player.Team = 255;
+    }
 }
 
 function onPlayerJoin( player ) {
-    playerData[player.ID] = PlayerData();
-    Message("[#0FE8F7]" + player.Name + " joined the server!");
-    local q = QuerySQL( accountDb, "SELECT * FROM players WHERE name='"+player.Name+"'")
-    if(q) {
-        playerData[player.ID].registered = true;
-        MessagePlayer("[#00FF00]This account is registered please use /login [password] to login.", player)
+    if(!CheckBan(player.ID))
+    {
+        Message("[#00FFFF]"+player.Name + " kicked reason: trying to join while banned")
+        KickPlayer(player)
     }
     else {
-        MessagePlayer("[#FF0000]This account is not registered please use /register [password] to register it.", player);
+        playerData[player.ID] = PlayerData();
+        Message("[#0FE8F7]" + player.Name + " joined the server!");
+        local q = QuerySQL( accountDb, "SELECT * FROM players WHERE name='"+player.Name+"'")
+        if(q) {
+            playerData[player.ID].registered = true;
+            MessagePlayer("[#00FF00]This account is registered please use /login [password] to login.", player)
+        }
+        else {
+            MessagePlayer("[#FF0000]This account is not registered please use /register [password] to register it.", player);
+        }
     }
+}
+
+function CheckBan(playerid) 
+{
+    local player = FindPlayer(playerid)
+    if(player)
+    {
+       local q = QuerySQL(ban, format( "SELECT * FROM bans WHERE bannedname = '%s' OR ip = '%s' OR uid = '%s' OR uid2 = '%s'", player.Name, player.IP, player.UniqueID, player.UniqueID2 ) ); 
+       if(q) {
+           local qry = QuerySQL(ban, "SELECT * FROM reason WHERE player = '"+player.Name+"'")
+           if(qry) {
+                local admin = GetSQLColumnData(qry, 1)
+                local reason = GetSQLColumnData(qry, 2)
+                MessagePlayer("[#FF0000]You are banned from this server reason: "+reason+" admin banned you:"+admin, player)
+                return false
+           }
+       }
+    }
+    return true
 }
 
 function onPlayerPart( player, reason) {
@@ -171,8 +218,8 @@ function onPlayerRequestSpawn( player ) {
 function onPickupPickedUp(player, pickup) {
 	switch(pickup.ID) 
 	{
-	case 0:
-	    player.Pos = Vector(-438,1115,56.69 )
+	    case 0:
+	        player.Pos = Vector(-438,1115,56.69 )
             break;
         case 1:
             player.Pos = Vector(-559,782,97.51 )
