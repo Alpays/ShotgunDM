@@ -167,18 +167,16 @@ function CheckBan(playerid)
     {
        local q = QuerySQL(ban, format( "SELECT * FROM bans WHERE bannedname = '%s' OR ip = '%s' OR uid = '%s' OR uid2 = '%s'", player.Name, player.IP, player.UniqueID, player.UniqueID2 ) ); 
        if(q) {
-           local qry = QuerySQL(ban, "SELECT * FROM reason WHERE player = '"+player.Name+"'")
-           if(qry) {
-                local admin = GetSQLColumnData(qry, 1)
-                local reason = GetSQLColumnData(qry, 2)
-                MessagePlayer("[#FF0000]You are banned from this server reason: "+reason+" admin banned you:"+admin, player)
-                return false
-           }
+	   local bannedName = GetSQLColumnData(q, 0)
+           local qry = QuerySQL(ban, "SELECT * FROM reason WHERE player = '"+bannedName+"'")
+           local admin = GetSQLColumnData(qry, 1)
+           local reason = GetSQLColumnData(qry, 2)
+           MessagePlayer("[#FF0000]You are banned from this server reason: "+reason+" admin banned you:"+admin, player)
+           return false
        }
     }
     return true
 }
-
 function onPlayerPart( player, reason) {
     switch(reason) {
         case 0:
@@ -218,8 +216,8 @@ function onPlayerRequestSpawn( player ) {
 function onPickupPickedUp(player, pickup) {
 	switch(pickup.ID) 
 	{
-	    case 0:
-	        player.Pos = Vector(-438,1115,56.69 )
+	case 0:
+	    player.Pos = Vector(-438,1115,56.69 )
             break;
         case 1:
             player.Pos = Vector(-559,782,97.51 )
