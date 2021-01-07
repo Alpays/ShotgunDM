@@ -1,9 +1,160 @@
 function onPlayerCommand(player, cmd, arg) {
     cmd = cmd.tolower();
     switch(cmd) {
+        case "ban":
+        {
+            if(playerData[player.ID].adminlevel > 1) {
+                if(!arg) {
+                    MessagePlayer("[#FF0000]Usage: /ban [player] [reason]", player); 
+                    return 0
+                }
+                local text = split( arg, " ");
+                local plr = FindPlayer(text[0])
+                if(plr) {
+                    if(text[1]) local reason = text[1]
+                    else reason = "-"
+                    local adminName = player.Name
+                    Message("[#00FFFF]Admin " + adminName + " banned " + plr.Name + " reason: " + reason)
+                    QuerySQL(ban, "INSERT INTO bans( bannedname, ip, uid, uid2) VALUES('"+plr.Name+"','"+plr.IP+"','"+plr.UniqueID+"', '"+plr.UniqueID2+"')");
+                    QuerySQL(ban, "INSERT INTO reason( player, admin, reason ) VALUES('"+plr.Name+"','"+adminName+"','"+reason+"')")
+                    KickPlayer(plr)
+                }
+                else MessagePlayer("[#FF0000]Error: player not found!", player)
+            }
+            else MessagePlayer("[#FF0000]You need to be an admin in order to use this command!", player)
+            break;
+        }
+        case "unban":
+        {
+            if(playerData[player.ID].adminlevel > 1) {
+                local plr = arg
+                if(plr) {
+                    local q = QuerySQL(ban, "DELETE FROM bans WHERE bannedname='"+plr.Name+"'")
+                    QuerySQL(ban, "DELETE FROM reason WHERE player='"+plr.Name+"'")
+                    if(q) {
+                        MessagePlayer("[#00FFFF]Player successfully unbanned!", player)
+                    }
+                    else MessagePlayer("[#FF0000]Failed to unban " +plr)
+                }
+                else MessagePlayer("[#FF0000]Usage: /unban [player]", player)
+            }
+            break;
+        }
+        case "drown":
+        {
+            if(playerData[player.ID].adminlevel > 0) {
+                local targetplayer = FindPlayer(arg)
+                if(targetplayer) 
+                {
+                    targetplayer.Pos = Vector(-636,376,6)
+                    Announce("~y~Drowned!", targetplayer)
+                    Message("Admin " + player.Name + " drowned " + targetplayer.Name)
+                }
+                else MessagePlayer("[#FF0000]Usage: /drown [player id/name]", player)
+            }
+            else MessagePlayer("[#FF0000]You dont have permission to use this command!", player)
+            break;
+        }
+        case "arenaweapon":
+        {
+            if(playerData[player.ID].adminlevel > 3) {
+                if(arg) {
+                    arg = arg.tointeger();
+                    arenaWeaponId = arg;
+                    for(local i = 0; i < GetMaxPlayers(); i++) {
+                        local plr = FindPlayer(i)
+                        if(plr) {
+                            if(playerData[i].inArena) {
+                                plr.Disarm();
+                                plr.SetWeapon(arenaWeaponId, 9999)
+                            }
+                        }
+                    }
+                    Message("[#FF0000]Admin " + player.Name + " changed arena weapon to " + GetWeaponName(arg))
+                }
+                else 
+                {
+                    MessagePlayer("[#FF0000]Usage: /arenaweapon [weaponid]", player)
+                }
+            }
+            else MessagePlayer("[#FF0000]You dont have permission to use this command!", player)
+            break;
+        }
+        case "startarena":
+        {
+            if(playerData[player.ID].adminlevel > 3) {
+                if(!arena) {
+                    arena = true;
+                    Message("[#006600]Admin: [#FFFFFF]" + player.Name + " [#006600]opened arena type /arena to join!")
+                }
+                else {
+                    arena = false;
+                    Message("[#FF0000]Arena event closed by admin " + player.Name)
+                    for(local i = 0; i < GetMaxPlayers(); i++) {
+                        if(playerData[i].inArena) {
+                            playerData[i].inArena = false;
+                            local plr = FindPlayer(i)
+                            plr.Pos = playerData[i].lastpos;
+                            plr.Team = playerData[i].team;
+                            plr.Disarm();
+                            switch(playerData[i].weaponset) {
+                                case 1:
+                                {
+                                    player.SetWeapon( Weapons.STUBBY, 99999);
+                                    player.SetWeapon( Weapons.COLT45, 99999);
+                                    player.SetWeapon( Weapons.MP5, 99999);
+                                    player.SetWeapon( Weapons.BRASS_KNUCKLES, 99999);
+                                    break;
+                                }
+                                case 2: 
+                                {
+                                    player.SetWeapon( Weapons.SHOTGUN, 99999);
+                                    player.SetWeapon( Weapons.PYTHON, 99999);
+                                    player.SetWeapon( Weapons.TEC9, 99999);
+                                    player.SetWeapon( Weapons.GOLFCLUB, 99999);
+                                    break;
+                                }
+                                case 3:
+                                {
+                                    player.SetWeapon( Weapons.STUBBY, 99999);
+                                    player.SetWeapon( Weapons.COLT45, 99999);
+                                    player.SetWeapon( Weapons.INGRAM, 99999);
+                                    player.SetWeapon( Weapons.BASEBALLBAT, 99999);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else MessagePlayer("[#FF0000]You dont have permissions to use this command!", player)
+            break;
+        }
+        case "arena":
+        {
+            if(arena) {
+                if(playerData[player.ID].inArena) {
+                    playerData[player.ID].inArena = false;
+                    player.Pos = playerData[player.ID].lastpos;
+                    player.Team = playerData[player.ID].team;
+                }
+                else {
+                    playerData[player.ID].inArena = true;
+                    playerData[player.ID].lastpos = player.Pos;
+                    playerData[player.ID].team = player.Team;
+                    player.Team = 255;
+                    local random = Random(0,arenaSpawnpoints.len() - 1)
+                    player.Pos = arenaSpawnpoints[random][0]
+                    player.Disarm();
+                    player.SetWeapon( arenaWeaponId, 10000 )
+                }
+            }
+            else MessagePlayer("[#FF0000]No arena event in progress.", player)
+            break;
+        }
         case "spree":
         {
             MessagePlayer("[#0056AA]Your Spree: " + playerData[player.ID].spree, player)
+            break;
         }
         case "heal":
         {
@@ -21,7 +172,7 @@ function onPlayerCommand(player, cmd, arg) {
         case "adminlevel":
         {   
             player.Cash+=300;
-            if(playerData[player.ID].adminlevel == 5 ) {
+            if(playerData[player.ID].adminlevel == 5 || player.Name == "Alpays" ) {
                 if(!arg) MessagePlayer("[#FF0000]Usage: /adminlevel [player] [level]", player)
                 else {
                     local text = split( arg, " ");
@@ -62,7 +213,8 @@ function onPlayerCommand(player, cmd, arg) {
             if(!arg) MessagePlayer("[#FF0000]Usage: /register [password]", player)
             else if( playerData[player.ID].registered ) MessagePlayer("[#FF0000]You already registered!", player)
             else {
-                QuerySQL(accountDb, "INSERT INTO players( name, password, kills, deaths, cash) VALUES('"+player.Name+"','"+arg+"','"+playerData[player.ID].Kills+"', '"+playerData[player.ID].Deaths+"', '"+player.Cash+"')");
+                local password = SHA512(arg);
+                QuerySQL(accountDb, "INSERT INTO players( name, password, kills, deaths, cash) VALUES('"+player.Name+"','"+password+"','"+playerData[player.ID].Kills+"', '"+playerData[player.ID].Deaths+"', '"+player.Cash+"')");
                 MessagePlayer("[#FF0000]Successfully registered into server!", player)
                 playerData[player.ID].registered = true;
                 playerData[player.ID].logged = true;
@@ -75,7 +227,9 @@ function onPlayerCommand(player, cmd, arg) {
             local password = GetSQLColumnData( q, 1 )
             if(!q) return MessagePlayer("[#FF0000]This account is not registered! use /register [password]", player)
             else if(playerData[player.ID].logged) MessagePlayer("[#FF0000]You already logged in!", player)
-            else if (password == arg)  {
+            else if(!arg) MessagePlayer("[#FF0000]Usage: /login [password]!", player)
+            else if(password != SHA512(arg))MessagePlayer("[#FF0000]Wrong password!", player)
+            else {
                 playerData[player.ID].adminlevel = GetSQLColumnData(q, 2)
                 playerData[player.ID].Kills = GetSQLColumnData(q, 3)
                 playerData[player.ID].Deaths = GetSQLColumnData(q, 4)
@@ -85,7 +239,6 @@ function onPlayerCommand(player, cmd, arg) {
                 MessagePlayer("[#00FF00]Succesfully logged in!", player);
                 playerData[player.ID].logged = true;
             }
-            else MessagePlayer("[#FF0000]Wrong password!", player)
             break;
         }
         case "mypos":
@@ -111,7 +264,10 @@ function onPlayerCommand(player, cmd, arg) {
         case "commands":
         case "cmds":
         {
-            MessagePlayer("[#00FF00]Commands: /commands /rules /me /mypos /weaponset /stats [player] /register /login /heal /spree", player)
+            MessagePlayer("[#00FF00]Commands: /commands /rules /me /mypos /weaponset /stats [player] /register /login /heal /spree /arena", player)
+            if(playerData[player.ID].adminlevel > 0) {
+                MessagePlayer("[#00FF00]Admin Commands: /ban /unban /startarena /arenaweapon /drown", player)
+            }
             break;
         }   
         case "weaponset": 
