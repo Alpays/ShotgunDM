@@ -1,6 +1,6 @@
 # Shotgun-DM
 
-Shotgun-DM is a Vice City Multiplayer gamemode written in squirrel that adds shotgun/stubby team deatmatch WITHOUT M4.\
+Shotgun-DM is a Vice City Multiplayer gamemode written in squirrel that adds shotgun/stubby team deatmatch\
 Gameplay is similiar to littlewhitey's gamemode but only with shotguns and downtown gameplay
 
 # Features
@@ -10,6 +10,12 @@ Lots of deathmatch Commands & Systems such as spree healing system weapon sets e
 Account System\
 Admin and Ban system\
 Enchanced Downtown map with car spawns ability to go inside buildings 
+
+# Required Plugins
+You need the following plugins in order to make script work.\
+squirrel04rel\
+hashing04rel\
+sqlite04rel_standard
 
 # Installation
 Copy scripts folder into your server directory.\
