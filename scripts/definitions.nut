@@ -42,3 +42,5 @@ const MAX_OBJECTS = 3000
 const MAX_PICKUPS = 2000
 const MAX_SPRITES = 128
 const MAX_TEXTDRAWS = 256
+
+const NO_TEAM = 255
