@@ -10,4 +10,7 @@ class PlayerData {
     healing = false;
     healTimer = 0;
     spree = 0;
+    inArena = false;
+    lastpos = Vector(0,0,0) 
+    team = 255;
 }
