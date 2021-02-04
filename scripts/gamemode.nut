@@ -25,7 +25,7 @@ function onScriptLoad() {
     // Server Settings
     SetTaxiBoostJump( true );
     SetDrivebyEnabled( false );
-    SetFriendlyFire( false );
+    SetFriendlyFire( true );
     SetDeathMessages( false );
     SetFrameLimiter( false );
     // Databases
@@ -243,7 +243,7 @@ function onPlayerKill(killer, player, reason, bodypart) {
     playerData[killer.ID].Kills++;
     killer.Cash+=500;
     player.Cash-=250;
-    Message("[#FA0BEA]" + killer.Name + " [#FFFFFF]killed[#FA0BEA] " + player.Name + " with " + GetWeaponName(reason)+ " ("+bodypart+")")
+	Message("[#FA0BEA]" + killer.Name + " [#FFFFFF]killed[#FA0BEA] " + player.Name + " [#FFFFFF]with [#00FF00]" + GetWeaponName(reason))
     playerData[killer.ID].spree++;
     if(playerData[player.ID].spree > 4) {
         Message("[#FFFFFF]" + player.Name + "'s spree of " + playerData[player.ID].spree + " ended by " + killer.Name)
